@@ -16,7 +16,7 @@ st.set_page_config(page_title="BrieflyAI", page_icon="🚀")
 st.title("🚀 BrieflyAI")
 
 # स्पष्ट नियम और विज्ञापन क्षेत्र
-st.info("💡 नियम: 5 KB तक की फाइल का समरी बिल्कुल फ्री है! उससे बड़ी फाइल्स के लिए प्रीमियम सेवा लें।")
+st.info("💡 नियम: 10 KB तक की फाइल का समरी बिल्कुल फ्री है! उससे बड़ी फाइल्स के लिए ₹30 का प्रीमियम लें।")
 
 st.sidebar.markdown("### विज्ञापन")
 st.sidebar.write("यहाँ आपके विज्ञापन आएंगे।")
@@ -29,12 +29,12 @@ if uploaded_file is not None:
     raw_data = uploaded_file.getvalue()
     text = raw_data.decode("utf-8", errors="replace")
     
-    # 5 KB की सीमा
-    if file_size_kb > 5:
-        st.warning(f"❌ फाइल साइज {file_size_kb:.2f} KB है। 5 KB से बड़ी फाइल्स के लिए प्रीमियम आवश्यक है।")
+    # 10 KB की सीमा
+    if file_size_kb > 10:
+        st.warning(f"❌ फाइल साइज {file_size_kb:.2f} KB है। 10 KB से बड़ी फाइल्स के लिए ₹30 का प्रीमियम आवश्यक है।")
         st.link_button("🚀 Pay ₹30 for Premium", url=PAYMENT_LINK)
     else:
-        st.success(f"✅ फाइल साइज: {file_size_kb:.2f} KB (Free Tier)")
+        st.success(f"✅ फाइल साइज: {file_size_kb:.2f} KB | Free Tier")
         
         if st.button("Generate Professional Summary"):
             parser = PlaintextParser.from_string(text, Tokenizer("english"))
