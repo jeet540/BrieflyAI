@@ -1,15 +1,11 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import nltk
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
 
-# Google AdSense Code Snippet
-adsense_code = """
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3995974960275140" crossorigin="anonymous"></script>
-"""
-components.html(adsense_code, height=0)
+# Google AdSense Meta Tag Verification
+st.markdown('<meta name="google-adsense-account" content="ca-pub-3995974960275140">', unsafe_allow_html=True)
 
 # NLTK setup
 try:
@@ -22,8 +18,7 @@ except LookupError:
 st.set_page_config(page_title="BrieflyAI", page_icon="🚀")
 st.title("🚀 BrieflyAI")
 
-# नियम और जानकारी
-st.info("💡 नियम: 10 KB तक की फाइल का समरी बिल्कुल फ्री है! उससे बड़ी फाइल्स के लिए ₹30 का प्रीमियम लें।")
+st.info("💡 नियम: 10 KB तक की फाइल का समरी बिल्कुल फ्री है!")
 
 PAYMENT_LINK = "https://razorpay.me/@manjitkainthbrieflyai"
 uploaded_file = st.file_uploader("अपनी .txt फाइल अपलोड करें:", type=["txt"])
@@ -46,8 +41,6 @@ if uploaded_file is not None:
             summary = " ".join([str(sentence) for sentence in summary_sentences])
             st.subheader("Summary:")
             st.write(summary)
-            st.caption("यह सारांश BrieflyAI द्वारा तैयार किया गया है।")
 
-# नीचे की तरफ Kainth का क्रेडिट
 st.markdown("---")
 st.markdown("<div style='text-align: right;'><strong>Powered by Kainth</strong></div>", unsafe_allow_html=True)
