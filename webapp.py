@@ -1,28 +1,30 @@
-﻿import streamlit as st
+import streamlit as st
 import nltk
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
 
-# NLTK setup
+# NLTK डेटा डाउनलोड (यह एरर को ठीक कर देगा)
 try:
-    nltk.download('punkt', quiet=True)
-except:
-    pass
+    nltk.data.find('tokenizers/punkt')
+    nltk.data.find('tokenizers/punkt_tab')
+except LookupError:
+    nltk.download('punkt')
+    nltk.download('punkt_tab')
 
 st.title("🚀 BrieflyAI")
 
-# पेमेंट लिंक (आपका पेमेंट हैंडल)
+# पेमेंट लिंक
 PAYMENT_LINK = "https://razorpay.me/@manjitkainthbrieflyai"
 
 uploaded_file = st.file_uploader("Upload .txt file:", type=["txt"])
 
 if uploaded_file is not None:
-    # फाइल साइज चेक करें (bytes में)
+    # फाइल साइज चेक करें
     file_size_kb = len(uploaded_file.getvalue()) / 1024
     
     try:
-        raw_data = uploaded_file.read()
+        raw_data = uploaded_file.getvalue()
         text = raw_data.decode("utf-8", errors="replace")
         
         # 1. अगर फाइल 200 KB से बड़ी है (प्रीमियम)
@@ -36,15 +38,16 @@ if uploaded_file is not None:
         else:
             st.success(f"फाइल साइज: {file_size_kb:.2f} KB (Free Tier)")
             
-            # यहाँ विज्ञापन का कोड लगाएं
+            # यहाँ विज्ञापन का कोड
             st.sidebar.markdown("### विज्ञापन")
-            st.sidebar.write("यहाँ अपने Google AdSense या किसी भी Ad का बैनर कोड डालें।")
+            st.sidebar.write("यहाँ अपने Google AdSense का कोड डाल सकते हैं।")
             
             if st.button("Generate Summary"):
                 if text.strip():
                     parser = PlaintextParser.from_string(text, Tokenizer("english"))
                     summarizer = LsaSummarizer()
-                    summary_sentences = summarizer(parser.document, 1)
+                    # 3 वाक्यों का सारांश (आप इसे बदल भी सकते हैं)
+                    summary_sentences = summarizer(parser.document, 3) 
                     summary = " ".join([str(sentence) for sentence in summary_sentences])
                     
                     st.subheader("Professional Summary:")
