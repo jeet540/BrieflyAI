@@ -42,5 +42,14 @@ if uploaded_file is not None:
             st.subheader("Summary:")
             st.write(summary)
 
+# About Us और Privacy Policy सेक्शन (वेरिफिकेशन के लिए जरूरी)
+st.markdown("---")
+st.subheader("जानकारी")
+with st.expander("About Us"):
+    st.write("BrieflyAI एक AI-आधारित टूल है जो लंबे टेक्स्ट को संक्षिप्त और सटीक सारांश (summary) में बदलता है।")
+
+with st.expander("Privacy Policy"):
+    st.write("हम आपकी निजता का सम्मान करते हैं। हम आपका डेटा सुरक्षित रखते हैं और किसी तीसरे पक्ष के साथ साझा नहीं करते हैं।")
+
 st.markdown("---")
 st.markdown("<div style='text-align: right;'><strong>Powered by Kainth</strong></div>", unsafe_allow_html=True)
