@@ -1,3 +1,5 @@
 streamlit
-nltk
+streamlit-authenticator
+pyarrow
 sumy
+nltk
