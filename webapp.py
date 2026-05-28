@@ -45,13 +45,13 @@ uploaded_file = st.file_uploader("अपनी .txt फाइल अपलोड
 
 # 3. नीले रंग का रेज़रपे डिब्बा हमेशा इस अपलोडर डिब्बे के ठीक नीचे लगा रहेगा
 if not st.session_state.file_unlocked:
-    # स्पष्ट निर्देश संदेश हमेशा बटन के ऊपर विज़िबल रहेगा
-    st.warning("💡 20 KB से ज़्यादा फ़ाइल है तो आपको ₹10 का भुगतान करना होगा (सिर्फ एक बार के एक्सेस के लिए)।")
+    # 📝 आपके कहे अनुसार कड़ाई से ₹1 का निर्देश संदेश सेट कर दिया गया है
+    st.warning("💡 20 KB से ज़्यादा फ़ाइल है तो आपको ₹1 का भुगतान करना होगा (सिर्फ एक बार के एक्सेस के लिए)।")
     
-    # 🔗 मंजीत भाई, यहाँ आपका पर्सनल razorpay.me वाला असली और सही हैंडल लिंक जोड़ दिया गया है
-    razorpay_payment_url = "https://razorpay.me/@manjitkainthbrieflyai"
-    
-    # 🚀 फिक्स: सुंदर गहरा नीला बटन जो बिना किसी रीलोड एरर के आपके इसी लिंक को सीधे नए टैब में 100% खोलेगा
+    # 🔗 आपका पर्सनल razorpay.me वाला असली और सही हैंडल लिंक
+    razorpay_payment_url = ""https://razorpay.me/@manjitkainthbrieflyai"" 
+
+    # 🚀 फिक्स: चमकदार गहरा नीला बटन जिसमें अब साफ़-साफ़ ₹1 (Pay ₹1) लिखा हुआ है
     pay_button_html = f"""
     <a href="{razorpay_payment_url}" target="_blank" style="text-decoration: none;">
         <button style="
@@ -67,7 +67,7 @@ if not st.session_state.file_unlocked:
             width: 100%;
             box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
             transition: background-color 0.2s;">
-            🚀 Pay ₹10 via Razorpay to Unlock One-Time Access
+            🚀 Pay ₹1 via Razorpay to Unlock One-Time Access
         </button>
     </a>
     """
@@ -89,13 +89,13 @@ if uploaded_file is not None:
     
     st.session_state.last_uploaded_file_name = uploaded_file.name
     
-    # केवल एक छोटा और साफ़ वार्निंग बॉक्स
+    # केवल एक छोटा और साफ़ वार्निंग बॉक्स (यहाँ भी ₹1 कर दिया गया है)
     if file_size_kb > 20 and not st.session_state.file_unlocked:
         st.write("---")
-        st.error(f"❌ फ़ाइल साइज़ ({file_size_kb:.2f} KB) सीमा से अधिक है! कृपया ऊपर दिए गए नीले बटन से ₹10 का भुगतान पूरा करें।")
+        st.error(f"❌ फ़ाइल साइज़ ({file_size_kb:.2f} KB) सीमा से अधिक है! कृपया ऊपर दिए गए नीले बटन से ₹1 का भुगतान पूरा करें।")
     
     else:
-        # अगर फ़ाइल 20 KB से छोटी है या यूजर पे करके आ चुका है (यहाँ बिना अटके एक्सेस मिलेगा)
+        # अगर फ़ाइल 20 KB से छोटी है या यूजर पे करके आ चुका है
         raw_data = uploaded_file.getvalue()
         text = raw_data.decode("utf-8", errors="replace")
         
