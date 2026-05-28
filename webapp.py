@@ -50,31 +50,12 @@ if not st.session_state.file_unlocked:
     # 🔗 आपका वही पुराना असली Razorpay पेमेंट लिंक जिसे बदलने की कोई ज़रूरत नहीं है
     razorpay_payment_url = "https://rzp_test_SuqquhEzlulI1l" 
 
-    # 🚀 फिक्स: Streamlit Markdown Link जो बिना किसी एरर के आपके इसी लिंक को सीधे पेमेंट गेटवे पर रीडायरेक्ट करेगा
-    st.markdown(
-        f"""
-        <a href="{razorpay_payment_url}" target="_blank" style="text-decoration: none;">
-            <div style="
-                background-color: #2b6cb0; 
-                color: white; 
-                padding: 14px 20px; 
-                border-radius: 5px; 
-                cursor: pointer; 
-                font-weight: bold;
-                font-size: 16px;
-                text-align: center;
-                box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                width: 100%;">
-                🚀 Pay ₹1 via Razorpay to Unlock One-Time Access
-            </div>
-        </a>
-        """, 
-        unsafe_allow_html=True
-    )
+    # 🚀 फिक्स: Streamlit का ऑफिशियल लिंक बटन जो बिना किसी रीलोड एरर के आपके इसी लिंक को सीधे नए टैब में 100% खोलेगा
+    st.link_button("🚀 Pay ₹1 via Razorpay to Unlock One-Time Access", razorpay_payment_url, use_container_width=True)
 else:
     st.success("🎉 Payment Verified! Your one-time file access is unlocked successfully.")
 
-# --- बैकएंड प्रोसेसिंग और चेतावनियों का लॉजिक ---
+# --- बैकएंड接收 और चेतावनियों का लॉजिक ---
 if uploaded_file is not None:
     file_size_kb = len(uploaded_file.getvalue()) / 1024
     
@@ -91,7 +72,7 @@ if uploaded_file is not None:
     # केवल एक छोटा और साफ़ वार्निंग बॉक्स
     if file_size_kb > 20 and not st.session_state.file_unlocked:
         st.write("---")
-        st.error(f"❌ फ़ाइल साइज़ ({file_size_kb:.2f} KB) सीमा से अधिक है! कृपया ऊपर दिए गए नीले बटन से ₹1 का भुगतान पूरा करें।")
+        st.error(f"❌ फ़ाइल साइज़ ({file_size_kb:.2f} KB) सीमा से अधिक है! कृपया ऊपर दिए गए नीले बटन से ₹1 का भुगतान पूरा करें onslaught.")
     
     else:
         # अगर फ़ाइल 20 KB से छोटी है या यूजर ₹1 पे करके आ चुका है (यहाँ बिना अटके एक्सेस मिलेगा)
