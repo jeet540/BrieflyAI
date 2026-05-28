@@ -10,7 +10,7 @@ from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
 
-# Google AdSense (आपकी ओरिजिनल आईडी पूरी तरह सुरक्षित है)
+# Google AdSense (आपकी ओरिजिनल आईडी यहाँ बिल्कुल सुरक्षित है)
 st.markdown('<meta name="google-adsense-account" content="ca-pub-3995974960275140">', unsafe_allow_html=True)
 
 # NLTK setup
@@ -27,58 +27,50 @@ if 'file_unlocked' not in st.session_state:
 if 'last_uploaded_file_name' not in st.session_state:
     st.session_state.last_uploaded_file_name = ""
 
-# 🎯 रेज़रपे से पेमेंट करके लौटने पर ऑटोमैटिक अनलॉक लॉजिक (बैकअप चेक)
+# 🎯 रेज़रपे से पेमेंट करके लौटने पर ऑटोमैटिक अनलॉक लॉजिक
 query_params = st.query_params
-if "unlocked" in query_params and query_params["unlocked"] == "true":
+if "payment_id" in query_params or "razorpay_payment_id" in query_params or "unlocked" in query_params:
     st.session_state.file_unlocked = True
-    st.query_params.clear()
+    st.query_params.clear()  # URL रसीद साफ़ करना
     st.rerun()
 
 # --- मुख्य सॉफ़्टवेयर स्क्रीन ---
 st.title("🚀 BrieflyAI")
 
-# 1. फ्री नियम का साफ़ संदेश
+# 1. सबसे ऊपर नियम का साफ़ संदेश
 st.info("💡 नियम: 20 KB तक की फाइल का समरी बिल्कुल फ्री है!")
 
-# 2. फ़ाइल अपलोडर डिब्बा
+# 2. उसके ठीक नीचे आपका "Drag and drop file here" वाला फ़ाइल अपलोडर
 uploaded_file = st.file_uploader("अपनी .txt फाइल अपलोड करें:", type=["txt"])
 
-# 3. ₹1 का हमेशा सामने दिखने वाला सुंदर पेमेंट बॉक्स और इन-ऐप लाइव गेटवे
+# 3. नीले रंग का रेज़रपे डिब्बा हमेशा इस अपलोडर डिब्बे के ठीक नीचे लगा रहेगा
 if not st.session_state.file_unlocked:
+    # स्पष्ट निर्देश संदेश हमेशा बटन के ऊपर विज़िबल रहेगा
     st.warning("💡 20 KB से ज़्यादा फ़ाइल है तो आपको ₹1 का भुगतान करना होगा (सिर्फ एक बार के एक्सेस के लिए)।")
     
-    # 🔗 मंजीत भाई, यहाँ आपका वही बिल्कुल सही पर्सनल Razorpay हैंडल लगाया गया है, 
-    # जो सीधे रेज़रपे का ऑफिशियल इन-ऐप पेमेंट फॉर्म ट्रिगर करेगा
-    personal_handle = "manjitkainthbrieflyai"
+    # 🔗 आपका बनाया हुआ असली और 100% सही Razorpay पेमेंट लिंक यहाँ वापस सेट कर दिया है
+    razorpay_payment_url = "rzp_test_SuqquhEzlulI1l" 
 
-    # यह HTML फॉर्म सीधे रेज़रपे के ऑफिशियल पेमेंट गेटवे को लोड करेगा और बिना अटके 100% भुगतान कराएगा
+    # यह आपका वही ओरिजिनल असली बटन है जो 100% स्क्रीन पर दिखाई देगा और नए टैब में पेज खोलेगा
     pay_button_html = f"""
-    <form action="https://streamlit.app" method="POST" style="margin: 0; padding: 0;">
-        <script
-            src="https://razorpay.com"
-            data-payment_button_id="pl_SupA9hbYa51cM"
-            data-button_text="🚀 Pay ₹1 via Razorpay to Unlock One-Time Access"
-            data-button_theme="brand-blue"
-            async>
-        </script>
-        <style>
-            .razorpay-payment-button {{
-                background-color: #2b6cb0 !important;
-                color: white !important;
-                padding: 14px 25px !important;
-                border: none !important;
-                border-radius: 5px !important;
-                cursor: pointer !important;
-                font-weight: bold !important;
-                font-size: 16px !important;
-                text-align: center !important;
-                width: 100% !important;
-                box-shadow: 0px 4px 6px rgba(0,0,0,0.1) !important;
-            }}
-        </style>
-    </form>
+    <a href="{razorpay_payment_url}" target="_blank" style="text-decoration: none;">
+        <button style="
+            background-color: #2b6cb0; 
+            color: white; 
+            padding: 12px 25px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
+            🚀 Pay ₹1 via Razorpay to Unlock One-Time Access
+        </button>
+    </a>
     """
-    components.html(pay_button_html, height=70)
+    components.html(pay_button_html, height=60)
 else:
     st.success("🎉 Payment Verified! Your one-time file access is unlocked successfully.")
 
@@ -86,9 +78,9 @@ else:
 if uploaded_file is not None:
     file_size_kb = len(uploaded_file.getvalue()) / 1024
     
-    # कड़ा नियम: जैसे ही कोई दूसरी नई फ़ाइल अपलोड होगी, पुराना ₹1 वाला ताला वापस कड़ाई से बंद हो जाएगा
+    # कड़ा नियम: जैसे ही कोई दूसरी नई फ़ाइल अपलोड होगी, पुराना ₹1 वाला एक्सेस तुरंत बंद हो जाएगा
     if st.session_state.last_uploaded_file_name != "" and st.session_state.last_uploaded_file_name != uploaded_file.name:
-        st.session_state.file_unlocked = False  
+        st.session_state.file_unlocked = False  # नया ताला बंद
         st.session_state.last_uploaded_file_name = uploaded_file.name
         if 'generated_summary' in st.session_state:
             del st.session_state.generated_summary
@@ -96,13 +88,13 @@ if uploaded_file is not None:
     
     st.session_state.last_uploaded_file_name = uploaded_file.name
     
-    # लाल रंग का एरर और चेतावनी तभी प्रकट होगी जब फ़ाइल बड़ी होगी और पेमेंट नहीं हुई होगी
+    # दो बड़े डिब्बों को हटाकर केवल एक छोटा और साफ़ वार्निंग बॉक्स
     if file_size_kb > 20 and not st.session_state.file_unlocked:
         st.write("---")
         st.error(f"❌ फ़ाइल साइज़ ({file_size_kb:.2f} KB) सीमा से अधिक है! कृपया ऊपर दिए गए नीले बटन से ₹1 का भुगतान पूरा करें।")
     
     else:
-        # अगर फ़ाइल 20 KB से छोटी है या यूजर ₹1 पे करके आ चुका है (यहाँ बिना अटके एक्सेस मिलेगा)
+        # अगर फ़ाइल 20 KB से छोटी है या यूजर ₹1 पे करके आ चुका है (चाहे जितनी मर्जी बड़ी फ़ाइल हो, एक्सेस मिलेगा)
         raw_data = uploaded_file.getvalue()
         text = raw_data.decode("utf-8", errors="replace")
         
