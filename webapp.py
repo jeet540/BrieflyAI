@@ -1,61 +1,77 @@
 import streamlit as st
-import nltk
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.lsa import LsaSummarizer
+import streamlit_authenticator as stauth
+import datetime
 
-# Google AdSense Meta Tag Verification
-st.markdown('<meta name="google-adsense-account" content="ca-pub-3995974960275140">', unsafe_allow_html=True)
-
-# NLTK setup
-try:
-    nltk.data.find('tokenizers/punkt')
-    nltk.data.find('tokenizers/punkt_tab')
-except LookupError:
-    nltk.download('punkt')
-    nltk.download('punkt_tab')
-
+# 1. पेज कॉन्फ़िगरेशन
 st.set_page_config(page_title="BrieflyAI", page_icon="🚀")
-st.title("🚀 BrieflyAI")
 
-st.info("💡 नियम: 10 KB तक की फाइल का समरी बिल्कुल फ्री है!")
+# 2. डमी यूजर डेटा (प्रोफेशनल सिस्टम के लिए इसे बाद में डेटाबेस से जोड़ें)
+names = ['User']
+usernames = ['kainth_user']
+hashed_passwords = ['abc'] 
 
-PAYMENT_LINK = "https://razorpay.me/@manjitkainthbrieflyai"
-uploaded_file = st.file_uploader("अपनी .txt फाइल अपलोड करें:", type=["txt"])
+authenticator = stauth.Authenticate(names, usernames, hashed_passwords, 'brieflyai_cookie', 'secret_key')
 
-if uploaded_file is not None:
-    file_size_kb = len(uploaded_file.getvalue()) / 1024
-    raw_data = uploaded_file.getvalue()
-    text = raw_data.decode("utf-8", errors="replace")
+# 3. लॉगिन सिस्टम
+name, authentication_status, username = authenticator.login('Login', 'main')
+
+if authentication_status:
+    # अगर लॉगिन सफल है
+    st.sidebar.write(f'स्वागत है, {name}!')
+    if st.sidebar.button('Logout'):
+        authenticator.logout('Logout', 'sidebar')
+
+    # मुख्य ऐप का टाइटल
+    st.title("🚀 BrieflyAI - Professional Summarizer")
     
-    if file_size_kb > 10:
-        st.warning(f"❌ फाइल साइज {file_size_kb:.2f} KB है। प्रीमियम आवश्यक है।")
-        st.link_button("🚀 Pay ₹30 for Premium", url=PAYMENT_LINK)
-    else:
-        st.success(f"✅ फाइल साइज: {file_size_kb:.2f} KB | Free Tier")
+    # सब्सक्रिप्शन डेटा को सुरक्षित रखने के लिए session_state
+    if 'subscription_expiry' not in st.session_state:
+        st.session_state.subscription_expiry = None
+
+    def activate_subscription():
+        st.session_state.subscription_expiry = datetime.date.today() + datetime.timedelta(days=30)
+        st.success("✅ सब्सक्रिप्शन सक्रिय हो गया! अब आप बड़ी फाइलें भी प्रोसेस कर सकते हैं।")
+
+    # सब्सक्रिप्शन चेक लॉजिक
+    is_active = False
+    if st.session_state.subscription_expiry:
+        today = datetime.date.today()
+        expiry = st.session_state.subscription_expiry
         
-        if st.button("Generate Professional Summary"):
-            parser = PlaintextParser.from_string(text, Tokenizer("english"))
-            summarizer = LsaSummarizer()
-            summary_sentences = summarizer(parser.document, 1) 
-            summary = " ".join([str(sentence) for sentence in summary_sentences])
-            st.subheader("Summary:")
-            st.write(summary)
+        # एक्सपायरी रिमाइंडर (1 दिन पहले)
+        if today == (expiry - datetime.timedelta(days=1)):
+            st.warning("🔔 ध्यान दें: आपका सब्सक्रिप्शन कल समाप्त हो रहा है।")
+            is_active = True
+        elif today <= expiry:
+            is_active = True
+        else:
+            st.error("⚠️ आपका सब्सक्रिप्शन समाप्त हो चुका है।")
 
-# About Us और Privacy Policy सेक्शन
-st.markdown("---")
-st.subheader("जानकारी")
-with st.expander("About Us"):
-    st.write("BrieflyAI एक AI-आधारित टूल है जो लंबे टेक्स्ट को संक्षिप्त और सटीक सारांश (summary) में बदलता है।")
+    # फाइल अपलोडर - 50KB लिमिट के साथ
+    uploaded_file = st.file_uploader("अपनी .txt फाइल अपलोड करें (Max 50KB)", type=["txt"])
+    
+    if uploaded_file is not None:
+        # 50KB से ऊपर होने पर सब्सक्रिप्शन मांगना
+        if uploaded_file.size > 50 * 1024:
+            st.error("❌ फाइल 50KB से बड़ी है!")
+            st.warning("💡 बड़ी फाइलें प्रोसेस करने के लिए ₹30 का सब्सक्रिप्शन लें (1 महीने के लिए)।")
+            if st.button("₹30 का सब्सक्रिप्शन लें"):
+                activate_subscription()
+        else:
+            st.success("✅ फाइल अपलोड सफल! प्रोसेसिंग शुरू...")
 
-with st.expander("Privacy Policy"):
-    st.write("हम आपकी निजता का सम्मान करते हैं। हम आपका डेटा सुरक्षित रखते हैं और किसी तीसरे पक्ष के साथ साझा नहीं करते हैं।")
+    # सजेशन बॉक्स
+    if is_active:
+        st.info("💡 प्रो-फीचर: अपने सुझाव यहाँ लिखें:")
+        st.text_area("सजेशन बॉक्स:")
+    else:
+        st.info("🔒 अधिक सुविधाओं के लिए ₹30 का सब्सक्रिप्शन लें।")
 
-# यहाँ आपका नया डिज़ाइन वाला Powered by सेक्शन है
-st.markdown("---")
-st.markdown("""
-    <div style='text-align: center; padding: 20px; background-color: #f9f9f9; border-radius: 10px; border: 1px solid #ddd;'>
-        <p style='font-size: 16px; font-weight: bold; color: #333;'>🚀 Powered by Kainth</p>
-        <p style='font-size: 12px; color: #777;'>© 2026 All Rights Reserved</p>
-    </div>
-""", unsafe_allow_html=True)
+    # ब्रांडिंग (Powered by Kainth)
+    st.markdown("---")
+    st.markdown("<div style='text-align: center;'>🚀 <strong>Powered by Kainth</strong></div>", unsafe_html=True)
+
+elif authentication_status == False:
+    st.error('गलत यूजरनेम या पासवर्ड!')
+elif authentication_status == None:
+    st.warning('कृपया साइन-इन करें।')
