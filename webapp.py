@@ -42,7 +42,7 @@ if uploaded_file is not None:
             st.subheader("Summary:")
             st.write(summary)
 
-# About Us और Privacy Policy सेक्शन (वेरिफिकेशन के लिए जरूरी)
+# About Us और Privacy Policy सेक्शन
 st.markdown("---")
 st.subheader("जानकारी")
 with st.expander("About Us"):
@@ -51,5 +51,11 @@ with st.expander("About Us"):
 with st.expander("Privacy Policy"):
     st.write("हम आपकी निजता का सम्मान करते हैं। हम आपका डेटा सुरक्षित रखते हैं और किसी तीसरे पक्ष के साथ साझा नहीं करते हैं।")
 
+# यहाँ आपका नया डिज़ाइन वाला Powered by सेक्शन है
 st.markdown("---")
-st.markdown("<div style='text-align: right;'><strong>Powered by Kainth</strong></div>", unsafe_allow_html=True)
+st.markdown("""
+    <div style='text-align: center; padding: 20px; background-color: #f9f9f9; border-radius: 10px; border: 1px solid #ddd;'>
+        <p style='font-size: 16px; font-weight: bold; color: #333;'>🚀 Powered by Kainth</p>
+        <p style='font-size: 12px; color: #777;'>© 2026 All Rights Reserved</p>
+    </div>
+""", unsafe_allow_html=True)
