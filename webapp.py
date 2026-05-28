@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from datetime import datetime
 
 # 1. सबसे पहली लाइन (Page Configuration)
@@ -45,17 +46,37 @@ uploaded_file = st.file_uploader("अपनी .txt फाइल अपलोड
 # 3. नीले रंग का रेज़रपे डिब्बा हमेशा इस अपलोडर डिब्बे के ठीक नीचे लगा रहेगा
 if not st.session_state.file_unlocked:
     # स्पष्ट निर्देश संदेश हमेशा बटन के ऊपर विज़िबल रहेगा
-    st.warning("💡 20 KB से ज़्यादा फ़ाइल है तो आपको ₹1 का भुगतान करना होगा (सिर्फ एक बार के एक्सेस के लिए)।")
+    st.warning("💡 20 KB से ज़्यादा फ़ाइल है तो आपको ₹10 का भुगतान करना होगा (सिर्फ एक बार के एक्सेस के लिए)।")
     
-    # 🔗 आपका वही पुराना असली Razorpay पेमेंट लिंक जिसे बदलने की कोई ज़रूरत नहीं है
-    razorpay_payment_url = "https://rzp_test_SuqquhEzlulI1l" 
+    # 🔗 मंजीत भाई, यहाँ आपका पर्सनल razorpay.me वाला असली और सही हैंडल लिंक जोड़ दिया गया है
+    razorpay_payment_url = "https://razorpay.me/
+@manjitkainthbrieflyai" 
 
-    # 🚀 फिक्स: Streamlit का ऑफिशियल लिंक बटन जो बिना किसी रीलोड एरर के आपके इसी लिंक को सीधे नए टैब में 100% खोलेगा
-    st.link_button("🚀 Pay ₹1 via Razorpay to Unlock One-Time Access", razorpay_payment_url, use_container_width=True)
+    # 🚀 फिक्स: सुंदर गहरा नीला बटन जो बिना किसी रीलोड एरर के आपके इसी लिंक को सीधे नए टैब में 100% खोलेगा
+    pay_button_html = f"""
+    <a href="{razorpay_payment_url}" target="_blank" style="text-decoration: none;">
+        <button style="
+            background-color: #2b6cb0; 
+            color: white; 
+            padding: 14px 25px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;">
+            🚀 Pay ₹10 via Razorpay to Unlock One-Time Access
+        </button>
+    </a>
+    """
+    components.html(pay_button_html, height=70)
 else:
     st.success("🎉 Payment Verified! Your one-time file access is unlocked successfully.")
 
-# --- बैकएंड接收 और चेतावनियों का लॉजिक ---
+# --- बैकएंड प्रोसेसिंग और चेतावनियों का लॉजिक ---
 if uploaded_file is not None:
     file_size_kb = len(uploaded_file.getvalue()) / 1024
     
@@ -72,10 +93,10 @@ if uploaded_file is not None:
     # केवल एक छोटा और साफ़ वार्निंग बॉक्स
     if file_size_kb > 20 and not st.session_state.file_unlocked:
         st.write("---")
-        st.error(f"❌ फ़ाइल साइज़ ({file_size_kb:.2f} KB) सीमा से अधिक है! कृपया ऊपर दिए गए नीले बटन से ₹1 का भुगतान पूरा करें onslaught.")
+        st.error(f"❌ फ़ाइल साइज़ ({file_size_kb:.2f} KB) सीमा से अधिक है! कृपया ऊपर दिए गए नीले बटन से ₹10 का भुगतान पूरा करें।")
     
     else:
-        # अगर फ़ाइल 20 KB से छोटी है या यूजर ₹1 पे करके आ चुका है (यहाँ बिना अटके एक्सेस मिलेगा)
+        # अगर फ़ाइल 20 KB से छोटी है या यूजर पे करके आ चुका है (यहाँ बिना अटके एक्सेस मिलेगा)
         raw_data = uploaded_file.getvalue()
         text = raw_data.decode("utf-8", errors="replace")
         
