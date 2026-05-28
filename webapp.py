@@ -38,7 +38,7 @@ if "payment_id" in query_params or "razorpay_payment_id" in query_params:
 st.title("🚀 BrieflyAI")
 
 # 1. सबसे ऊपर नियम का साफ़ संदेश
-st.info("💡 नियम: 20 KB तक की फाइल का samri बिल्कुल फ्री है!")
+st.info("💡 नियम: 20 KB तक की फाइल का समरी बिल्कुल फ्री है!")
 
 # 2. उसके ठीक नीचे आपका "Drag and drop file here" वाला फ़ाइल अपलोडर
 uploaded_file = st.file_uploader("अपनी .txt फाइल अपलोड करें:", type=["txt"])
