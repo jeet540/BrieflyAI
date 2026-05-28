@@ -49,9 +49,8 @@ if not st.session_state.file_unlocked:
     st.warning("💡 20 KB से ज़्यादा फ़ाइल है तो आपको ₹10 का भुगतान करना होगा (सिर्फ एक बार के एक्सेस के लिए)।")
     
     # 🔗 मंजीत भाई, यहाँ आपका पर्सनल razorpay.me वाला असली और सही हैंडल लिंक जोड़ दिया गया है
-    razorpay_payment_url = "https://razorpay.me/
-@manjitkainthbrieflyai" 
-
+    razorpay_payment_url = "https://razorpay.me/@manjitkainthbrieflyai"
+    
     # 🚀 फिक्स: सुंदर गहरा नीला बटन जो बिना किसी रीलोड एरर के आपके इसी लिंक को सीधे नए टैब में 100% खोलेगा
     pay_button_html = f"""
     <a href="{razorpay_payment_url}" target="_blank" style="text-decoration: none;">
