@@ -48,7 +48,7 @@ if not st.session_state.file_unlocked:
     st.warning("💡 20 KB से ज़्यादा फ़ाइल है तो आपको ₹1 का भुगतान करना होगा (सिर्फ एक बार के एक्सेस के लिए)।")
     
     # 🔗 आपका वही पुराना असली Razorpay पेमेंट लिंक जिसे बदलने की कोई ज़रूरत नहीं है
-    razorpay_payment_url = "rzp_test_SuqquhEzlulI1l" 
+    razorpay_payment_url = "https://rzp_test_SuqquhEzlulI1l" 
 
     # 🚀 फिक्स: Streamlit Markdown Link जो बिना किसी एरर के आपके इसी लिंक को सीधे पेमेंट गेटवे पर रीडायरेक्ट करेगा
     st.markdown(
