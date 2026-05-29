@@ -9,12 +9,6 @@ from docx import Document
 
 # --- PAGE CONFIG ---
 # --- HEADER WITH LOGO ---
-col1, col2 = st.columns([1, 4])
-with col1:
-    # "logo.png" ki jagah apni image ka exact naam likhein
-    st.image("logo.png", width=100) 
-with col2:
-    st.title("BrieflyAI")
 st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
 
 # --- FILE READING FUNCTION ---
