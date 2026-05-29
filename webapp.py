@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit_authenticator as stauth
 import streamlit.components.v1 as components
 import nltk
 from sumy.parsers.plaintext import PlaintextParser
@@ -26,10 +25,23 @@ def get_text_from_file(uploaded_file):
             text += para.text + "\n"
     return text
 
+# --- SIDEBAR (About & Privacy) ---
+st.sidebar.title("About BrieflyAI")
+st.sidebar.info("BrieflyAI ek smart summarization tool hai jo badi files ko chota aur readable banata hai.")
+st.sidebar.markdown("---")
+st.sidebar.title("Legal")
+if st.sidebar.button("Privacy Policy"):
+    st.sidebar.write("""
+    *Privacy Policy:*
+    BrieflyAI aapki upload ki gayi files ko store nahi karta. 
+    Aapka data sirf process karne ke liye hai aur session 
+    khatam hote hi delete ho jata hai.
+    """)
+
 # --- AUTHENTICATOR SETUP ---
-if True: # Yahan apna authenticator status handle karein
+if True: 
     
-    # Google AdSense (Script + Meta)
+    # Google AdSense
     st.markdown("""
         <meta name="google-adsense-account" content="ca-pub-3995974960275140">
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3995974960275140"
@@ -58,7 +70,6 @@ if True: # Yahan apna authenticator status handle karein
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        # File Uploader Update (PDF/DOCX/TXT support)
         uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
 
     with col2:
@@ -66,9 +77,9 @@ if True: # Yahan apna authenticator status handle karein
             <div style="background-color: #1e293b; padding: 20px; border-radius: 8px; border-left: 5px solid #10b981; margin-top: 25px;">
                 <h4 style="color: #f8fafc; margin-top: 0;">⚡ Tool Features</h4>
                 <ul style="color: #cbd5e1; padding-left: 20px; margin-bottom: 0;">
-                    <li>Multi-Format Support (PDF/DOCX/TXT)</li>
+                    <li>Multi-Format Support</li>
                     <li>Professional AI Summary</li>
-                    <li>Bullet Point Output</li>
+                    <li>Privacy-Focused</li>
                 </ul>
             </div>
         """, unsafe_allow_html=True)
@@ -78,11 +89,11 @@ if True: # Yahan apna authenticator status handle karein
         
         st.write("---")
         if st.button("✨ Generate Professional Summary", use_container_width=True):
-            with st.spinner("Analyzing..."):
+            # Yahan spinner add kiya hai
+            with st.spinner("Analyzing and summarizing your file, please wait..."):
                 parser = PlaintextParser.from_string(text, Tokenizer("english"))
                 summarizer = LsaSummarizer()
                 
-                # Automatic Scaling Logic
                 total_sentences = len(list(parser.document.sentences))
                 count = 2 if total_sentences < 10 else max(3, int(total_sentences * 0.15))
                 
@@ -95,12 +106,11 @@ if True: # Yahan apna authenticator status handle karein
         components.html('<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script><script>confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});</script>', height=0, width=0)
         st.session_state.show_flowers = False
 
-    # Summary Display (Bullet Points)
+    # Summary Display
     if 'generated_sentences' in st.session_state:
         st.write("### 📋 Professional Summary:")
         for sentence in st.session_state.generated_sentences:
             st.markdown(f"- {sentence}")
         
-        # Download Button
         summary_full_text = " ".join([str(s) for s in st.session_state.generated_sentences])
         st.download_button("📥 Download Summary File", summary_full_text, "BrieflyAI_Summary.txt", use_container_width=True)
