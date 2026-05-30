@@ -6,11 +6,12 @@ from docx import Document
 from transformers import pipeline
 
 # --- PAGE CONFIG ---
-st.set_config = st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
 
-# Hugging Face Model Setup (Multilingual: Hindi, Punjabi, English)
+# Hugging Face Model Setup (Multilingual)
 @st.cache_resource
 def load_summarizer():
+    # यह मॉडल हिंदी, पंजाबी और इंग्लिश के लिए सबसे स्टेबल है
     return pipeline("summarization", model="google/mt5-small")
 
 # --- FILE READING FUNCTION ---
@@ -44,7 +45,7 @@ if st.sidebar.button("Privacy Policy"):
 # --- AUTHENTICATOR SETUP ---
 if True: 
     
-    # Google AdSense (आपका कोड सुरक्षित है)
+    # Google AdSense
     st.markdown("""
         <meta name="google-adsense-account" content="ca-pub-3995974960275140">
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3995974960275140"
@@ -93,13 +94,14 @@ if True:
         st.write("---")
         if st.button("✨ Generate Professional Summary", use_container_width=True):
             with st.spinner("Analyzing and summarizing, please wait..."):
-                # Transformers के साथ समरी जनरेशन
-                summarizer = load_summarizer()
-                summary_output = summarizer(text[:1500], max_length=150, min_length=40, do_sample=False)
-                summary_text = summary_output[0]['summary_text']
-                
-                st.session_state.generated_text = summary_text
-                st.session_state.show_flowers = True
+                try:
+                    summarizer = load_summarizer()
+                    # छोटा समरी लॉजिक
+                    summary_output = summarizer(text[:1500], max_length=150, min_length=40, do_sample=False)
+                    st.session_state.generated_summary = summary_output[0]['summary_text']
+                    st.session_state.show_flowers = True
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
     # Confetti Logic
     if st.session_state.show_flowers:
@@ -107,8 +109,7 @@ if True:
         st.session_state.show_flowers = False
 
     # Summary Display
-    if 'generated_text' in st.session_state:
+    if 'generated_summary' in st.session_state:
         st.write("### 📋 Professional Summary:")
-        st.markdown(f"*{st.session_state.generated_text}*")
-        
-        st.download_button("📥 Download Summary File", st.session_state.generated_text, "BrieflyAI_Summary.txt", use_container_width=True)
+        st.write(st.session_state.generated_summary)
+        st.download_button("📥 Download Summary File", st.session_state.generated_summary, "BrieflyAI_Summary.txt", use_container_width=True)
