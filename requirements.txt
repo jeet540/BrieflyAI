@@ -5,4 +5,4 @@ sumy
 nltk
 pypdf
 python-docx
-google-generativeai
+google-generativeai>=0.4.0
