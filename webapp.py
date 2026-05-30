@@ -15,10 +15,10 @@ st.markdown("""
 # API Configuration
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    # यहाँ मॉडल बदल दिया है ताकि यह एरर न दे
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # 'models/' का उपसर्ग (prefix) जोड़ना Free Tier के लिए बहुत ज़रूरी है
+    model = genai.GenerativeModel('models/gemini-1.5-flash')
 except Exception as e:
-    st.error(f"API Configuration Error: {e}")
+    st.error(f"API Setup Error: {e}")
 
 # --- FUNCTIONS ---
 def get_text_from_file(uploaded_file):
@@ -37,20 +37,24 @@ def get_text_from_file(uploaded_file):
 
 # --- UI LAYOUT ---
 st.title("🚀 BrieflyAI")
-uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
+
+uploaded_file = st.file_uploader("यहाँ अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
 
 if uploaded_file is not None:
     text = get_text_from_file(uploaded_file)
+    
     if st.button("✨ Generate Professional Summary"):
         with st.spinner("AI समरी तैयार कर रहा है..."):
             try:
-                response = model.generate_content(f"Summarize this text in the same language as the input: {text}")
+                response = model.generate_content(f"Summarize this text: {text}")
                 summary = response.text
+                
                 st.subheader("Summary:")
                 st.write(summary)
+                
                 st.download_button("📥 Download Summary", summary, "summary.txt")
             except Exception as e:
-                st.error(f"AI समरी एरर: {e}")
+                st.error(f"समरी एरर: {e}")
 
 # --- BOTTOM SECTION ---
 st.markdown("---")
