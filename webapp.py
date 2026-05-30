@@ -13,9 +13,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # API Configuration
+# यहाँ मॉडल का नाम 'gemini-1.5-pro' या 'gemini-pro' ही रहने दें, यह सबसे स्टेबल है।
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-1.5-pro')
 except Exception as e:
     st.error(f"API Configuration Error: {e}")
 
@@ -36,9 +37,8 @@ def get_text_from_file(uploaded_file):
 
 # --- UI LAYOUT ---
 st.title("🚀 BrieflyAI")
-st.write("अपनी फ़ाइलें अपलोड करें और प्रोफ़ेशनल समरी प्राप्त करें।")
 
-uploaded_file = st.file_uploader("यहाँ अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
+uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
 
 if uploaded_file is not None:
     text = get_text_from_file(uploaded_file)
@@ -52,22 +52,14 @@ if uploaded_file is not None:
                 st.subheader("Summary:")
                 st.write(summary)
                 
-                # डाउनलोड बटन
-                st.download_button(
-                    label="📥 Download Summary",
-                    data=summary,
-                    file_name="summary.txt",
-                    mime="text/plain"
-                )
+                st.download_button("📥 Download Summary", summary, "summary.txt")
             except Exception as e:
-                st.error(f"AI समरी जनरेट करने में एरर आया: {e}")
+                st.error(f"समरी जनरेट करने में समस्या: {e}")
 
-# --- BOTTOM SECTION (Status & Footer) ---
+# --- BOTTOM SECTION ---
 st.markdown("---")
 col1, col2 = st.columns([2, 1])
-
 with col1:
-    st.write("🟢 System Status: Ready")
-    
+    st.write("🟢 System Status: Active")
 with col2:
     st.markdown("*Powered by Kainth*")
