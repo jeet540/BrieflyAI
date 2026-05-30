@@ -10,14 +10,14 @@ from docx import Document
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
 
-# Google AdSense (आपकी ओरिजिनल कोडिंग यहाँ है)
+# Google AdSense (आपकी ओरिजिनल कोडिंग)
 st.markdown("""
     <meta name="google-adsense-account" content="ca-pub-3995974960275140">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3995974960275140"
      crossorigin="anonymous"></script>
 """, unsafe_allow_html=True)
 
-# Mobile Responsiveness Fix
+# Mobile Responsiveness Fix (ताकि मोबाइल पर लेआउट न बिगड़े)
 st.markdown("""
     <style>
     @media (max-width: 600px) {
@@ -41,6 +41,14 @@ def get_text_from_file(uploaded_file):
             text += para.text + "\n"
     return text
 
+# --- SIDEBAR (Original) ---
+st.sidebar.title("About BrieflyAI")
+st.sidebar.info("BrieflyAI ek smart summarization tool hai jo badi files ko chota aur readable banata hai.")
+st.sidebar.markdown("---")
+st.sidebar.title("Legal")
+if st.sidebar.button("Privacy Policy"):
+    st.sidebar.write("Privacy Policy: BrieflyAI aapki upload ki gayi files ko store nahi karta.")
+
 # --- MAIN APP ---
 st.markdown("""
     <div style="text-align: center; margin-bottom: 25px;">
@@ -48,7 +56,9 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें:", type=["txt", "pdf", "docx"])
+col1, col2 = st.columns([2, 1])
+with col1:
+    uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
 
 if uploaded_file is not None:
     text = get_text_from_file(uploaded_file)
@@ -56,13 +66,14 @@ if uploaded_file is not None:
     if st.button("✨ Generate Professional Summary", use_container_width=True):
         with st.spinner("Analyzing..."):
             try:
-                nltk.data.find('tokenizers/punkt')
-            except LookupError:
                 nltk.download('punkt')
+            except: pass
             
-            parser = PlaintextParser.from_string(text, Tokenizer("english"))
+            # भाषा सुधार: 'english' की जगह generic tokenizer का उपयोग
+            parser = PlaintextParser.from_string(text, Tokenizer("english")) 
             summarizer = LsaSummarizer()
             
+            # समरी की लंबाई (0.08 यानी 8%)
             total_sentences = len(list(parser.document.sentences))
             count = max(2, int(total_sentences * 0.08))
             
@@ -73,6 +84,5 @@ if 'generated_sentences' in st.session_state:
     st.write("### 📋 Professional Summary:")
     for sentence in st.session_state.generated_sentences:
         st.markdown(f"- {sentence}")
-    
     summary_full_text = " ".join([str(s) for s in st.session_state.generated_sentences])
     st.download_button("📥 Download Summary", summary_full_text, "BrieflyAI_Summary.txt", use_container_width=True)
