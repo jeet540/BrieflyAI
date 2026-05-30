@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 import google.generativeai as genai
 import pypdf
 from docx import Document
@@ -12,7 +11,7 @@ try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     model = genai.GenerativeModel('gemini-pro')
 except:
-    st.error("API Key नहीं मिली, कृपया Secrets सेटिंग्स चेक करें।")
+    st.error("API Key नहीं मिली। कृपया Secrets सेटिंग्स चेक करें।")
 
 # --- FUNCTIONS ---
 def get_text_from_file(uploaded_file):
@@ -29,38 +28,28 @@ def get_text_from_file(uploaded_file):
             text += para.text + "\n"
     return text
 
-# --- SIDEBAR ---
-st.sidebar.title("BrieflyAI Control")
-uploaded_file = st.file_uploader("फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
-
-# --- MAIN PAGE ---
+# --- UI LAYOUT ---
 st.title("🚀 BrieflyAI")
+
+uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
 
 if uploaded_file is not None:
     text = get_text_from_file(uploaded_file)
     
     if st.button("✨ Generate Professional Summary"):
-        with st.spinner("Gemini AI समरी बना रहा है..."):
-            response = model.generate_content(f"Summarize this text in the same language as the input: {text}")
-            summary = response.text
-            
-            st.subheader("Summary:")
-            st.write(summary)
-            
-            # आपका डाउनलोड फीचर
-            st.download_button(
-                label="📥 Download Summary",
-                data=summary,
-                file_name="summary.txt",
-                mime="text/plain"
-            )
+        with st.spinner("AI समरी तैयार कर रहा है..."):
+            try:
+                response = model.generate_content(f"Summarize this text in the same language as the input: {text}")
+                summary = response.text
+                
+                st.subheader("Summary:")
+                st.write(summary)
+                
+                st.download_button("📥 Download Summary", summary, "summary.txt")
+            except Exception as e:
+                st.error(f"एरर: {e}")
 
-# --- फूटर सेक्शन (Status & Powered by) ---
+# --- BOTTOM SECTION ---
 st.markdown("---")
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    st.write("🟢 System Status: Ready")
-    
-with col2:
-    st.markdown("*Powered by Kainth*")
+st.write("🟢 System Status: Active")
+st.markdown("*Powered by Kainth*")
