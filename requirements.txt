@@ -5,6 +5,6 @@ sumy
 nltk
 pypdf
 python-docx
-transformers==4.30.0
+transformers
 torch
 sentencepiece
