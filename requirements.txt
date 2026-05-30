@@ -1,8 +1,8 @@
-streamlit
+streamlit>=1.30.0
 streamlit-authenticator
 pyarrow
 sumy
 nltk
 pypdf
 python-docx
-google-generativeai>=0.4.0
+google-generativeai>=0.7.0
