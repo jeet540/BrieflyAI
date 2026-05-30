@@ -8,10 +8,11 @@ from transformers import pipeline
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
 
-# Hugging Face AI Model Load (Hindi, Punjabi, English)
+# Hugging Face Model (Stability के लिए)
 @st.cache_resource
 def load_summarizer():
-    return pipeline("summarization", model="google/mt5-small")
+    # 'facebook/bart-large-cnn' बहुत स्टेबल है और एरर कम देता है
+    return pipeline("summarization", model="facebook/bart-large-cnn")
 
 # --- FILE READING FUNCTION ---
 def get_text_from_file(uploaded_file):
@@ -94,14 +95,14 @@ if True:
         if st.button("✨ Generate Professional Summary", use_container_width=True):
             with st.spinner("Analyzing and summarizing, please wait..."):
                 try:
-                    # यहाँ नया AI लॉजिक है
                     summarizer = load_summarizer()
-                    # 1000 शब्दों की लिमिट ताकि सर्वर पर एरर न आए
-                    summary_output = summarizer(text[:1000], max_length=150, min_length=40, do_sample=False)
-                    st.session_state.summary_text = summary_output[0]['summary_text']
+                    # छोटा टेक्स्ट रखें ताकि RAM पर लोड न पड़े
+                    input_text = text[:800] 
+                    summary_output = summarizer(input_text, max_length=130, min_length=30, do_sample=False)
+                    st.session_state.generated_summary = summary_output[0]['summary_text']
                     st.session_state.show_flowers = True
                 except Exception as e:
-                    st.error("समरी जनरेट करने में छोटी दिक्कत आई, फाइल चेक करें।")
+                    st.error(f"समरी बनाने में दिक्कत आ रही है: {e}")
 
     # Confetti Logic
     if st.session_state.show_flowers:
@@ -109,7 +110,7 @@ if True:
         st.session_state.show_flowers = False
 
     # Summary Display
-    if 'summary_text' in st.session_state:
+    if 'generated_summary' in st.session_state:
         st.write("### 📋 Professional Summary:")
-        st.markdown(f"- {st.session_state.summary_text}")
-        st.download_button("📥 Download Summary File", st.session_state.summary_text, "BrieflyAI_Summary.txt", use_container_width=True)
+        st.write(st.session_state.generated_summary)
+        st.download_button("📥 Download Summary File", st.session_state.generated_summary, "BrieflyAI_Summary.txt", use_container_width=True)
