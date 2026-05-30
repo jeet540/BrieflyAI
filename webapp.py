@@ -3,16 +3,18 @@ import streamlit.components.v1 as components
 import nltk
 import pypdf
 from docx import Document
-from transformers import pipeline
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
 
-# Hugging Face Model Setup
+# Hugging Face Model Setup (बिल्कुल सही तरीका)
 @st.cache_resource
-def load_summarizer():
-    # 'text2text-generation' टास्क का उपयोग करना सबसे स्टेबल तरीका है
-    return pipeline("text2text-generation", model="google/mt5-small")
+def load_model_and_tokenizer():
+    model_name = "google/mt5-small"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+    return tokenizer, model
 
 # --- FILE READING FUNCTION ---
 def get_text_from_file(uploaded_file):
@@ -29,87 +31,51 @@ def get_text_from_file(uploaded_file):
             text += para.text + "\n"
     return text
 
-# --- SIDEBAR (About & Privacy) ---
+# --- SIDEBAR & AUTHENTICATOR ---
 st.sidebar.title("About BrieflyAI")
 st.sidebar.info("BrieflyAI ek smart summarization tool hai jo badi files ko chota aur readable banata hai.")
 st.sidebar.markdown("---")
 st.sidebar.title("Legal")
 if st.sidebar.button("Privacy Policy"):
-    st.sidebar.write("""
-    Privacy Policy:
-    BrieflyAI aapki upload ki gayi files ko store nahi karta. 
-    Aapka data sirf process karne ke liye hai aur session 
-    khatam hote hi delete ho jata hai.
-    """)
+    st.sidebar.write("BrieflyAI aapki upload ki gayi files ko store nahi karta.")
 
-# --- AUTHENTICATOR SETUP ---
-if True: 
-    
-    # Google AdSense
-    st.markdown("""
-        <meta name="google-adsense-account" content="ca-pub-3995974960275140">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3995974960275140"
-         crossorigin="anonymous"></script>
-    """, unsafe_allow_html=True)
+# --- GOOGLE ADSENSE & HEADER ---
+st.markdown("""
+    <meta name="google-adsense-account" content="ca-pub-3995974960275140">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3995974960275140" crossorigin="anonymous"></script>
+""", unsafe_allow_html=True)
 
-    # NLTK Setup
-    try:
-        nltk.data.find('tokenizers/punkt')
-        nltk.data.find('tokenizers/punkt_tab')
-    except LookupError:
-        nltk.download('punkt')
-        nltk.download('punkt_tab')
+st.markdown("<h1 style='text-align: center; color: #2b6cb0;'>🚀 BrieflyAI</h1>", unsafe_allow_html=True)
 
-    if 'show_flowers' not in st.session_state:
-        st.session_state.show_flowers = False
+col1, col2 = st.columns([2, 1])
+with col1:
+    uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
+with col2:
+    st.markdown("<div style='background-color: #1e293b; padding: 20px; border-radius: 8px; border-left: 5px solid #10b981; margin-top: 25px;'><h4>⚡ Tool Features</h4><ul><li>Multi-Format Support</li><li>AI Summary</li></ul></div>", unsafe_allow_html=True)
 
-    # Header
-    st.markdown("""
-        <div style="text-align: center; margin-bottom: 25px;">
-            <h1 style="color: #2b6cb0; font-size: 42px; font-weight: bold; margin-bottom: 5px;">🚀 BrieflyAI</h1>
-            <p style="color: #64748b; font-size: 18px;">Fast, Professional and Beautiful Text Summarizer</p>
-        </div>
-    """, unsafe_allow_html=True)
+if uploaded_file is not None:
+    text = get_text_from_file(uploaded_file)
+    if st.button("✨ Generate Professional Summary", use_container_width=True):
+        with st.spinner("AI समरी तैयार कर रहा है..."):
+            try:
+                tokenizer, model = load_model_and_tokenizer()
+                # टेक्स्ट को टोकनाइज़ करना
+                inputs = tokenizer("summarize: " + text[:1000], return_tensors="pt", max_length=1024, truncation=True)
+                # समरी जनरेट करना
+                outputs = model.generate(inputs["input_ids"], max_length=150, min_length=40, length_penalty=2.0, num_beams=4, early_stopping=True)
+                summary = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                
+                st.session_state.generated_summary = summary
+                st.session_state.show_flowers = True
+            except Exception as e:
+                st.error(f"Error: {e}")
 
-    col1, col2 = st.columns([2, 1])
+# Confetti & Display
+if 'show_flowers' in st.session_state and st.session_state.show_flowers:
+    components.html('<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script><script>confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});</script>', height=0, width=0)
+    st.session_state.show_flowers = False
 
-    with col1:
-        uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
-
-    with col2:
-        st.markdown("""
-            <div style="background-color: #1e293b; padding: 20px; border-radius: 8px; border-left: 5px solid #10b981; margin-top: 25px;">
-                <h4 style="color: #f8fafc; margin-top: 0;">⚡ Tool Features</h4>
-                <ul style="color: #cbd5e1; padding-left: 20px; margin-bottom: 0;">
-                    <li>Multi-Format Support</li>
-                    <li>Professional AI Summary</li>
-                    <li>Privacy-Focused</li>
-                </ul>
-            </div>
-        """, unsafe_allow_html=True)
-
-    if uploaded_file is not None:
-        text = get_text_from_file(uploaded_file)
-        
-        st.write("---")
-        if st.button("✨ Generate Professional Summary", use_container_width=True):
-            with st.spinner("Analyzing and summarizing, please wait..."):
-                try:
-                    summarizer = load_summarizer()
-                    # MT5 के लिए 'summarize: ' प्रीफिक्स लगाना ज़रूरी है
-                    result = summarizer("summarize: " + text[:1000], max_length=150, min_length=40)
-                    st.session_state.generated_summary = result[0]['generated_text']
-                    st.session_state.show_flowers = True
-                except Exception as e:
-                    st.error(f"Error: {e}")
-
-    # Confetti Logic
-    if st.session_state.show_flowers:
-        components.html('<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script><script>confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});</script>', height=0, width=0)
-        st.session_state.show_flowers = False
-
-    # Summary Display
-    if 'generated_summary' in st.session_state:
-        st.write("### 📋 Professional Summary:")
-        st.write(st.session_state.generated_summary)
-        st.download_button("📥 Download Summary File", st.session_state.generated_summary, "BrieflyAI_Summary.txt", use_container_width=True)
+if 'generated_summary' in st.session_state:
+    st.write("### 📋 Professional Summary:")
+    st.write(st.session_state.generated_summary)
+    st.download_button("📥 Download", st.session_state.generated_summary, "Summary.txt", use_container_width=True)
