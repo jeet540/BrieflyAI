@@ -8,11 +8,11 @@ from transformers import pipeline
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
 
-# Hugging Face Model (Stability के लिए)
+# Hugging Face Model Setup
 @st.cache_resource
 def load_summarizer():
-    # 'facebook/bart-large-cnn' बहुत स्टेबल है और एरर कम देता है
-    return pipeline("summarization", model="facebook/bart-large-cnn")
+    # 'text2text-generation' टास्क का उपयोग करना सबसे स्टेबल तरीका है
+    return pipeline("text2text-generation", model="google/mt5-small")
 
 # --- FILE READING FUNCTION ---
 def get_text_from_file(uploaded_file):
@@ -96,13 +96,12 @@ if True:
             with st.spinner("Analyzing and summarizing, please wait..."):
                 try:
                     summarizer = load_summarizer()
-                    # छोटा टेक्स्ट रखें ताकि RAM पर लोड न पड़े
-                    input_text = text[:800] 
-                    summary_output = summarizer(input_text, max_length=130, min_length=30, do_sample=False)
-                    st.session_state.generated_summary = summary_output[0]['summary_text']
+                    # MT5 के लिए 'summarize: ' प्रीफिक्स लगाना ज़रूरी है
+                    result = summarizer("summarize: " + text[:1000], max_length=150, min_length=40)
+                    st.session_state.generated_summary = result[0]['generated_text']
                     st.session_state.show_flowers = True
                 except Exception as e:
-                    st.error(f"समरी बनाने में दिक्कत आ रही है: {e}")
+                    st.error(f"Error: {e}")
 
     # Confetti Logic
     if st.session_state.show_flowers:
