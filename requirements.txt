@@ -5,6 +5,4 @@ sumy
 nltk
 pypdf
 python-docx
-transformers
-torch
-sentencepiece
+
