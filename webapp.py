@@ -12,14 +12,15 @@ st.markdown("""
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3995974960275140" crossorigin="anonymous"></script>
 """, unsafe_allow_html=True)
 
-# API Configuration - यहाँ हमने वर्शन के साथ फिक्स किया है
+# API Configuration
 try:
+    # अपनी Key को Streamlit के Secrets में पक्का चेक कर लें
     api_key = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=api_key)
-    # सीधे जेमिनी फ्लैश को कॉल करें, इसमें कोई फालतू पाथ नहीं चाहिए
+    # यह सबसे स्टेबल तरीका है
     model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.error(f"API Setup Error: {e}")
+    st.error(f"API Configuration Error: {e}")
 
 # --- FUNCTIONS ---
 def get_text_from_file(uploaded_file):
@@ -38,25 +39,37 @@ def get_text_from_file(uploaded_file):
 
 # --- UI LAYOUT ---
 st.title("🚀 BrieflyAI")
-uploaded_file = st.file_uploader("यहाँ फाइल अपलोड करें:", type=["txt", "pdf", "docx"])
+st.write("अपनी फ़ाइलें अपलोड करें और प्रोफ़ेशनल समरी प्राप्त करें।")
+
+uploaded_file = st.file_uploader("यहाँ अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
 
 if uploaded_file is not None:
     text = get_text_from_file(uploaded_file)
     
-    if st.button("✨ Generate Summary"):
-        with st.spinner("AI काम कर रहा है..."):
+    if st.button("✨ Generate Professional Summary"):
+        with st.spinner("AI समरी तैयार कर रहा है..."):
             try:
-                response = model.generate_content(text) # सीधे कंटेंट जनरेट करें
+                # सीधे कंटेंट भेजें
+                response = model.generate_content(f"Summarize this text: {text}")
+                summary = response.text
+                
                 st.subheader("Summary:")
-                st.write(response.text)
-                st.download_button("📥 Download", response.text, "summary.txt")
+                st.write(summary)
+                
+                st.download_button(
+                    label="📥 Download Summary",
+                    data=summary,
+                    file_name="summary.txt",
+                    mime="text/plain"
+                )
             except Exception as e:
-                st.error(f"AI समरी एरर: {e}")
+                st.error(f"समरी एरर: {e}")
 
 # --- BOTTOM SECTION ---
 st.markdown("---")
 col1, col2 = st.columns([2, 1])
+
 with col1:
-    st.write("🟢 Status: Online")
+    st.write("🟢 System Status: Active")
 with col2:
     st.markdown("*Powered by Kainth*")
