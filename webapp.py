@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import nltk
+import chardet  # Universal encoding detect karne ke liye added
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
@@ -8,22 +9,37 @@ import pypdf
 from docx import Document
 
 # --- PAGE CONFIG ---
-# --- HEADER WITH LOGO ---
 st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
 
 # --- FILE READING FUNCTION ---
 def get_text_from_file(uploaded_file):
     text = ""
     if uploaded_file.name.endswith(".txt"):
-        text = uploaded_file.getvalue().decode("utf-8", errors="replace")
+        # Mobile vs PC ke liye universal encoding detection logic
+        raw_bytes = uploaded_file.getvalue()
+        detected = chardet.detect(raw_bytes)
+        encoding = detected['encoding'] if detected['encoding'] else 'utf-8'
+        
+        try:
+            text = raw_bytes.decode(encoding, errors="ignore")
+        except Exception:
+            text = raw_bytes.decode("utf-8", errors="ignore")
+            
     elif uploaded_file.name.endswith(".pdf"):
+        # Mobile extraction optimization
         pdf_reader = pypdf.PdfReader(uploaded_file)
+        full_text = []
         for page in pdf_reader.pages:
-            text += page.extract_text() or ""
+            page_text = page.extract_text()
+            if page_text:
+                full_text.append(page_text)
+        text = "\n".join(full_text)
+        
     elif uploaded_file.name.endswith(".docx"):
         doc = Document(uploaded_file)
         for para in doc.paragraphs:
             text += para.text + "\n"
+            
     return text
 
 # --- SIDEBAR (About & Privacy) ---
@@ -49,7 +65,7 @@ if True:
          crossorigin="anonymous"></script>
     """, unsafe_allow_html=True)
 
-    # NLTK Setup
+    # NLTK Setup (Punjabi/Hindi ke tokenizers support ke liye)
     try:
         nltk.data.find('tokenizers/punkt')
         nltk.data.find('tokenizers/punkt_tab')
@@ -90,17 +106,20 @@ if True:
         
         st.write("---")
         if st.button("✨ Generate Professional Summary", use_container_width=True):
-            # Yahan spinner add kiya hai
             with st.spinner("Analyzing and summarizing your file, please wait..."):
-                parser = PlaintextParser.from_string(text, Tokenizer("english"))
-                summarizer = LsaSummarizer()
-                
-                total_sentences = len(list(parser.document.sentences))
-                count = 2 if total_sentences < 10 else max(3, int(total_sentences * 0.15))
-                
-                summary_sentences = summarizer(parser.document, count)
-                st.session_state.generated_sentences = summary_sentences
-                st.session_state.show_flowers = True
+                if text.strip():
+                    # Tokenizer ko "multilingual" par set kiya hai taaki Hindi/Punjabi split ho sake
+                    parser = PlaintextParser.from_string(text, Tokenizer("multilingual"))
+                    summarizer = LsaSummarizer()
+                    
+                    total_sentences = len(list(parser.document.sentences))
+                    count = 2 if total_sentences < 10 else max(3, int(total_sentences * 0.15))
+                    
+                    summary_sentences = summarizer(parser.document, count)
+                    st.session_state.generated_sentences = summary_sentences
+                    st.session_state.show_flowers = True
+                else:
+                    st.error("File mein koi valid text nahi mila. Kripya check karein!")
 
     # Confetti Logic
     if st.session_state.show_flowers:
