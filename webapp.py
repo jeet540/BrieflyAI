@@ -154,7 +154,7 @@ if True:
             </div>
         """, unsafe_allow_html=True)
 
-    # AAPKA ORIGINAL REAL LOGIC: Bina kisi state variable ke direct execution block
+    # Original Fast Logic
     if uploaded_file is not None:
         text = get_text_from_file(uploaded_file)
         
@@ -179,21 +179,27 @@ if True:
                     try:
                         summary_sentences = summarizer(parser.document, count)
                         
-                        # DIRECT DISPLAY PANEL (Bina state lock ke, jaise aapke original code mein tha)
+                        # Summary Box Header Container
                         st.markdown("""
                             <div style="background-color: #1e293b; padding: 25px; border-radius: 12px; margin-top: 20px; border: 1px solid #334155;">
                                 <h3 style="color: #3b82f6; margin-top: 0; font-weight: 700;">📋 Professional Summary:</h3>
                             </div>
                         """, unsafe_allow_html=True)
                         
+                        # VISUAL FIXED BLOCK: Text color aur visibility ko strictly control kiya hai taaki black background par chamke
                         for sentence in summary_sentences:
-                            st.markdown(f"<p style='color: #ffffff; font-size: 16px; font-weight: 500; line-height: 1.6; margin-left: 10px;'>• {sentence}</p>", unsafe_allow_html=True)
+                            st.markdown(f"""
+                                <div style="background-color: #111827; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #10b981;">
+                                    <p style="color: #ffffff !important; font-size: 16px !important; font-weight: 600 !important; line-height: 1.6; margin: 0 !important; text-shadow: 1px 1px 2px #000000;">
+                                        • {sentence}
+                                    </p>
+                                </div>
+                            """, unsafe_allow_html=True)
                         
                         st.write("")
                         summary_full_text = " ".join([str(s) for s in summary_sentences])
                         st.download_button("📥 Download Summary File", summary_full_text, "BrieflyAI_Summary.txt", use_container_width=True)
                         
-                        # Flowers animation ko display ke baad trigger kiya
                         st.session_state.show_flowers = True
                         
                     except Exception:
@@ -201,7 +207,7 @@ if True:
                 else:
                     st.error("No extractable content found. Please ensure the file contains valid text characters.")
 
-    # Confetti Logic (Pure separate execute block)
+    # Confetti Logic
     if st.session_state.show_flowers:
         components.html('<script src="https://jsdelivr.net"></script><script>confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});</script>', height=0, width=0)
         st.session_state.show_flowers = False
