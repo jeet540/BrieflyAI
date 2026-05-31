@@ -5,7 +5,7 @@ import chardet  # Universal encoding detect karne ke liye
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
-import pdfplumber  # Indian languages (Hindi/Punjabi) ke liye pypdf ko badla
+import pdfplumber  # Indian languages (Hindi/Punjabi) ke liye
 from docx import Document
 
 # --- PAGE CONFIG ---
@@ -15,7 +15,6 @@ st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
 def get_text_from_file(uploaded_file):
     text = ""
     if uploaded_file.name.endswith(".txt"):
-        # Mobile vs PC ke liye universal encoding detection logic
         raw_bytes = uploaded_file.getvalue()
         detected = chardet.detect(raw_bytes)
         encoding = detected['encoding'] if detected['encoding'] else 'utf-8'
@@ -26,12 +25,10 @@ def get_text_from_file(uploaded_file):
             text = raw_bytes.decode("utf-8", errors="ignore")
             
     elif uploaded_file.name.endswith(".pdf"):
-        # Complex layouts (Hindi/Punjabi) ke liye pdfplumber ka istemal
         try:
             with pdfplumber.open(uploaded_file) as pdf:
                 full_text = []
                 for page in pdf.pages:
-                    # extract_text layout=True dene se matrayein aur akshar aapas mein nahi toot-te
                     page_text = page.extract_text(layout=False)
                     if page_text:
                         full_text.append(page_text)
@@ -92,7 +89,8 @@ if True:
         </div>
     """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns()
+    # FIXED LINE: Added 2 inside brackets
+    col1, col2 = st.columns(2)
 
     with col1:
         uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
@@ -115,7 +113,6 @@ if True:
         st.write("---")
         if st.button("✨ Generate Professional Summary", use_container_width=True):
             with st.spinner("Analyzing and summarizing your file, please wait..."):
-                # Kisi bhi faltu space ya blank text ko handle karne ke liye check
                 cleaned_text = text.strip() if text else ""
                 
                 if cleaned_text and len(cleaned_text) > 10:
