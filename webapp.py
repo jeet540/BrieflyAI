@@ -186,14 +186,12 @@ if True:
                             </div>
                         """, unsafe_allow_html=True)
                         
-                        # VISUAL FIXED BLOCK: Text color aur visibility ko strictly control kiya hai taaki black background par chamke
+                        # UPDATED TEXT BLOCK: Kale dabbe poori tarah hata diye hain aur text color ekdum solid black (#000000) kiya hai
                         for sentence in summary_sentences:
                             st.markdown(f"""
-                                <div style="background-color: #111827; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #10b981;">
-                                    <p style="color: #ffffff !important; font-size: 16px !important; font-weight: 600 !important; line-height: 1.6; margin: 0 !important; text-shadow: 1px 1px 2px #000000;">
-                                        • {sentence}
-                                    </p>
-                                </div>
+                                <p style="color: #000000 !important; font-size: 16px !important; font-weight: 600 !important; line-height: 1.6; margin: 15px 0 !important;">
+                                    • {sentence}
+                                </p>
                             """, unsafe_allow_html=True)
                         
                         st.write("")
