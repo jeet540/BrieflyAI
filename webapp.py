@@ -5,7 +5,7 @@ import chardet  # Universal encoding detect karne ke liye
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
-import pypdf
+import pdfplumber  # Indian languages (Hindi/Punjabi) ke liye pypdf ko badla
 from docx import Document
 
 # --- PAGE CONFIG ---
@@ -26,19 +26,27 @@ def get_text_from_file(uploaded_file):
             text = raw_bytes.decode("utf-8", errors="ignore")
             
     elif uploaded_file.name.endswith(".pdf"):
-        # Mobile extraction optimization
-        pdf_reader = pypdf.PdfReader(uploaded_file)
-        full_text = []
-        for page in pdf_reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                full_text.append(page_text)
-        text = "\n".join(full_text)
+        # Complex layouts (Hindi/Punjabi) ke liye pdfplumber ka istemal
+        try:
+            with pdfplumber.open(uploaded_file) as pdf:
+                full_text = []
+                for page in pdf.pages:
+                    # extract_text layout=True dene se matrayein aur akshar aapas mein nahi toot-te
+                    page_text = page.extract_text(layout=False)
+                    if page_text:
+                        full_text.append(page_text)
+                text = "\n".join(full_text)
+        except Exception as e:
+            st.error(f"PDF read karne mein dikkat aayi: {e}")
+            text = ""
         
     elif uploaded_file.name.endswith(".docx"):
-        doc = Document(uploaded_file)
-        for para in doc.paragraphs:
-            text += para.text + "\n"
+        try:
+            doc = Document(uploaded_file)
+            for para in doc.paragraphs:
+                text += para.text + "\n"
+        except Exception as e:
+            text = ""
             
     return text
 
@@ -55,7 +63,7 @@ if st.sidebar.button("Privacy Policy"):
     khatam hote hi delete ho jata hai.
     """)
 
-# --- AUTHENTICATOR SETUP ---
+# --- MAIN APP CODE ---
 if True: 
     
     # Google AdSense
@@ -84,7 +92,7 @@ if True:
         </div>
     """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns()
 
     with col1:
         uploaded_file = st.file_uploader("अपनी फाइल अपलोड करें (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
@@ -107,9 +115,11 @@ if True:
         st.write("---")
         if st.button("✨ Generate Professional Summary", use_container_width=True):
             with st.spinner("Analyzing and summarizing your file, please wait..."):
-                if text.strip():
-                    # Tokenizer ko 'english' rakha hai taaki multi-language text bina crash ke split ho sake
-                    parser = PlaintextParser.from_string(text, Tokenizer("english"))
+                # Kisi bhi faltu space ya blank text ko handle karne ke liye check
+                cleaned_text = text.strip() if text else ""
+                
+                if cleaned_text and len(cleaned_text) > 10:
+                    parser = PlaintextParser.from_string(cleaned_text, Tokenizer("english"))
                     summarizer = LsaSummarizer()
                     
                     total_sentences = len(list(parser.document.sentences))
@@ -119,7 +129,7 @@ if True:
                     st.session_state.generated_sentences = summary_sentences
                     st.session_state.show_flowers = True
                 else:
-                    st.error("File mein koi valid text nahi mila. Kripya check karein!")
+                    st.error("File mein koi valid text nahi mila ya text bahut chota hai. Kripya check karein!")
 
     # Confetti Logic
     if st.session_state.show_flowers:
