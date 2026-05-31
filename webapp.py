@@ -1,30 +1,18 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import nltk
-import chardet
+import chardet  # Universal encoding detection
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
-import pdfplumber
+import pdfplumber  # Clean multi-language extraction engine
 from docx import Document
-import numpy as np
-import cv2
-
-# --- OPTIONAL EASYOCR MODE FOR SCANNED FILES ---
-@st.cache_resource
-def load_ocr_engine():
-    try:
-        import easyocr
-        # English, Hindi aur Punjabi teeno languages ko ek sath initialize kiya hai
-        return easyocr.Reader(['en', 'hi', 'pa'], gpu=False)
-    except Exception:
-        return None
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="BrieflyAI", page_icon="🚀", layout="wide")
 
-# --- MASTER FILE READING FUNCTION ---
-def get_text_universal_engine(uploaded_file):
+# --- FILE READING FUNCTION ---
+def get_text_from_file(uploaded_file):
     text = ""
     file_name = uploaded_file.name.lower()
     
@@ -42,30 +30,12 @@ def get_text_universal_engine(uploaded_file):
             with pdfplumber.open(uploaded_file) as pdf:
                 full_text = []
                 for page in pdf.pages:
-                    page_text = page.extract_text()
+                    # layout=False rakhne se language extraction normalise ho jati hai
+                    page_text = page.extract_text(layout=False)
                     if page_text:
                         full_text.append(page_text)
                 text = "\n".join(full_text)
-            
-            # CRITICAL FALLBACK: Agar text blank mila (Aadhar/Scanned Certificate/Photo)
-            if not text.strip() or len(text.strip()) < 5:
-                reader = load_ocr_engine()
-                if reader is not None:
-                    ocr_text_list = []
-                    # Dubara file read karke scan images se text nikalne ke liye layout processing
-                    with pdfplumber.open(uploaded_file) as pdf:
-                        for page in pdf.pages:
-                            # Page ko image stream mein badalkar OpenCV format banaya
-                            pil_img = page.to_image(resolution=150).original
-                            open_cv_image = np.array(pil_img)
-                            # OCR Engine se Punjabi/Hindi/English read karwaya
-                            results = reader.readtext(open_cv_image, detail=0)
-                            if results:
-                                ocr_text_list.append(" ".join(results))
-                    text = "\n".join(ocr_text_list)
-                    
         except Exception as e:
-            st.error(f"Engine parsing alert: {e}")
             text = ""
         
     elif file_name.endswith(".docx"):
@@ -138,33 +108,34 @@ if True:
         """, unsafe_allow_html=True)
 
     if uploaded_file is not None:
-        text = get_text_universal_engine(uploaded_file)
+        text = get_text_from_file(uploaded_file)
         
         st.write("---")
         if st.button("✨ Generate Professional Summary", use_container_width=True):
-            with st.spinner("Analyzing and processing document structure, please wait..."):
+            with st.spinner("Analyzing and summarizing your file, please wait..."):
                 cleaned_text = text.strip() if text else ""
                 
+                # Minimum threshold ko 3 kar diya hai taaki self-declaration files bypass na ho sakein
                 if cleaned_text and len(cleaned_text) > 3:
                     parser = PlaintextParser.from_string(cleaned_text, Tokenizer("english"))
                     summarizer = LsaSummarizer()
                     
                     total_sentences = len(list(parser.document.sentences))
                     
-                    # Chhoti certificate files ya single-line data ke liye dynamic count mapping
+                    # Agar single line ya chota content hai toh error dene ke bajaye vahi display karega
                     if total_sentences <= 2:
                         count = total_sentences
                     else:
-                        count = 2 if total_sentences < 10 else max(3, int(total_sentences * 0.18))
+                        count = 2 if total_sentences < 10 else max(3, int(total_sentences * 0.15))
                     
                     try:
                         summary_sentences = summarizer(parser.document, count)
                         st.session_state.generated_sentences = summary_sentences
                         st.session_state.show_flowers = True
                     except Exception:
-                        st.error("Engine failed to rank text matrices due to formatting limitations.")
+                        st.error("Text processing matrix limit alert. File text stream contains non-standard encodings.")
                 else:
-                    st.error("No valid text found. Ensure the document is readable and not password protected.")
+                    st.error("No valid text found. Ensure the document contains selectable text and is not an unreadable scan.")
 
     # Confetti Logic
     if st.session_state.show_flowers:
