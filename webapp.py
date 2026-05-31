@@ -125,13 +125,11 @@ if True:
         nltk.download('punkt', quiet=True)
         nltk.download('punkt_tab', quiet=True)
 
-    # --- SESSION STATE INITIALIZATION (PC Fix) ---
+    # Session State Variables
     if 'generated_sentences' not in st.session_state:
         st.session_state.generated_sentences = None
     if 'show_flowers' not in st.session_state:
         st.session_state.show_flowers = False
-    if 'last_uploaded_file' not in st.session_state:
-        st.session_state.last_uploaded_file = None
 
     # Header UI
     st.markdown("""
@@ -141,38 +139,37 @@ if True:
         </div>
     """, unsafe_allow_html=True)
 
-    # Grid Layout Fix
-    col1, col2 = st.columns(2)
+    # FORM IMPLEMENTATION (PC PAR REFRESH HONA ROKNE KE LIYE)
+    with st.form("summarizer_form", clear_on_submit=False):
+        # Grid Layout Fix inside Form
+        col1, col2 = st.columns(2)
 
-    with col1:
-        uploaded_file = st.file_uploader("Upload your document (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
+        with col1:
+            uploaded_file = st.file_uploader("Upload your document (TXT, PDF, DOCX):", type=["txt", "pdf", "docx"])
 
-    with col2:
-        st.markdown("""
-            <div style="background-color: #1e293b; padding: 22px; border-radius: 12px; border-left: 5px solid #3b82f6; margin-top: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                <h4 style="color: #f8fafc; margin-top: 0; font-weight: 700;">⚡ Tool Features</h4>
-                <ul style="color: #94a3b8; padding-left: 20px; margin-bottom: 0; line-height: 1.6;">
-                    <li>Multi-Format Engine (TXT, PDF, DOCX)</li>
-                    <li>Advanced Character & Encoding Mapping</li>
-                    <li>Zero-Data Retention Architecture</li>
-                </ul>
-            </div>
-        """, unsafe_allow_html=True)
+        with col2:
+            st.markdown("""
+                <div style="background-color: #1e293b; padding: 22px; border-radius: 12px; border-left: 5px solid #3b82f6; margin-top: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <h4 style="color: #f8fafc; margin-top: 0; font-weight: 700;">⚡ Tool Features</h4>
+                    <ul style="color: #94a3b8; padding-left: 20px; margin-bottom: 0; line-height: 1.6;">
+                        <li>Multi-Format Engine (TXT, PDF, DOCX)</li>
+                        <li>Advanced Character & Encoding Mapping</li>
+                        <li>Zero-Data Retention Architecture</li>
+                    </ul>
+                </div>
+            """, unsafe_allow_html=True)
 
-    # Nayi file upload hote hi purani memory clean karne ka mechanism
-    if uploaded_file is not None and uploaded_file.name != st.session_state.last_uploaded_file:
-        st.session_state.generated_sentences = None
-        st.session_state.last_uploaded_file = uploaded_file.name
+        # Form Submit Button
+        submit_button = st.form_submit_button("✨ Generate Professional Summary", use_container_width=True)
 
-    if uploaded_file is not None:
-        text = get_text_from_file(uploaded_file)
-        
-        st.write("---")
-        if st.button("✨ Generate Professional Summary", use_container_width=True):
-            with st.spinner("Analyzing text streams and compiling summary, please wait..."):
-                cleaned_text = text.strip() if text else ""
-                
-                if cleaned_text and len(cleaned_text) > 3:
+    # Processing Logic executed outside the visual container bounds to lock states
+    if submit_button:
+        if uploaded_file is not None:
+            text = get_text_from_file(uploaded_file)
+            cleaned_text = text.strip() if text else ""
+            
+            if cleaned_text and len(cleaned_text) > 3:
+                with st.spinner("Analyzing text streams and compiling summary, please wait..."):
                     parser = PlaintextParser.from_string(cleaned_text, Tokenizer("english"))
                     summarizer = LsaSummarizer()
                     
@@ -187,21 +184,21 @@ if True:
                     
                     try:
                         summary_sentences = summarizer(parser.document, count)
-                        # String formats mein change karke safe locking kari hai taaki re-run par crash na ho
                         st.session_state.generated_sentences = [str(s) for s in summary_sentences]
                         st.session_state.show_flowers = True
-                        st.rerun() # PC browsers par UI state ko force update karne ke liye
                     except Exception:
                         st.error("Engine failed to rank sentences. The document might have restricted permissions.")
-                else:
-                    st.error("No extractable content found. Please ensure the file contains valid text characters.")
+            else:
+                st.error("No extractable content found. Please ensure the file contains valid text characters.")
+        else:
+            st.error("Please upload a file first before clicking generate!")
 
     # Confetti Logic
     if st.session_state.show_flowers:
         components.html('<script src="https://jsdelivr.net"></script><script>confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});</script>', height=0, width=0)
         st.session_state.show_flowers = False
 
-    # Summary Display Panel - Persistent Data Stream Fix
+    # Summary Display Panel (Stays fixed on PC and Phone)
     if st.session_state.generated_sentences is not None:
         st.markdown("""
             <div style="background-color: #1e293b; padding: 25px; border-radius: 12px; margin-top: 20px; border: 1px solid #334155;">
