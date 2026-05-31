@@ -5,4 +5,4 @@ sumy
 nltk
 pypdf
 python-docx
-
+chardet
