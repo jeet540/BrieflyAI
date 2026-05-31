@@ -125,8 +125,13 @@ if True:
         nltk.download('punkt', quiet=True)
         nltk.download('punkt_tab', quiet=True)
 
+    # --- SESSION STATE INITIALIZATION (PC Fix) ---
+    if 'generated_sentences' not in st.session_state:
+        st.session_state.generated_sentences = None
     if 'show_flowers' not in st.session_state:
         st.session_state.show_flowers = False
+    if 'last_uploaded_file' not in st.session_state:
+        st.session_state.last_uploaded_file = None
 
     # Header UI
     st.markdown("""
@@ -154,6 +159,11 @@ if True:
             </div>
         """, unsafe_allow_html=True)
 
+    # Nayi file upload hote hi purani memory clean karne ka mechanism
+    if uploaded_file is not None and uploaded_file.name != st.session_state.last_uploaded_file:
+        st.session_state.generated_sentences = None
+        st.session_state.last_uploaded_file = uploaded_file.name
+
     if uploaded_file is not None:
         text = get_text_from_file(uploaded_file)
         
@@ -168,15 +178,19 @@ if True:
                     
                     total_sentences = len(list(parser.document.sentences))
                     
-                    if total_sentences <= 2:
+                    if total_sentences <= 3:
                         count = total_sentences
+                    elif total_sentences < 15:
+                        count = 2
                     else:
-                        count = 2 if total_sentences < 10 else max(3, int(total_sentences * 0.15))
+                        count = max(3, int(total_sentences * 0.08))
                     
                     try:
                         summary_sentences = summarizer(parser.document, count)
-                        st.session_state.generated_sentences = summary_sentences
+                        # String formats mein change karke safe locking kari hai taaki re-run par crash na ho
+                        st.session_state.generated_sentences = [str(s) for s in summary_sentences]
                         st.session_state.show_flowers = True
+                        st.rerun() # PC browsers par UI state ko force update karne ke liye
                     except Exception:
                         st.error("Engine failed to rank sentences. The document might have restricted permissions.")
                 else:
@@ -187,8 +201,8 @@ if True:
         components.html('<script src="https://jsdelivr.net"></script><script>confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});</script>', height=0, width=0)
         st.session_state.show_flowers = False
 
-    # Summary Display Panel
-    if 'generated_sentences' in st.session_state:
+    # Summary Display Panel - Persistent Data Stream Fix
+    if st.session_state.generated_sentences is not None:
         st.markdown("""
             <div style="background-color: #1e293b; padding: 25px; border-radius: 12px; margin-top: 20px; border: 1px solid #334155;">
                 <h3 style="color: #3b82f6; margin-top: 0; font-weight: 700;">📋 Professional Summary:</h3>
@@ -199,10 +213,10 @@ if True:
             st.markdown(f"<p style='color: #ffffff; font-size: 16px; font-weight: 500; line-height: 1.6; margin-left: 10px;'>• {sentence}</p>", unsafe_allow_html=True)
         
         st.write("")
-        summary_full_text = " ".join([str(s) for s in st.session_state.generated_sentences])
+        summary_full_text = " ".join(st.session_state.generated_sentences)
         st.download_button("📥 Download Summary File", summary_full_text, "BrieflyAI_Summary.txt", use_container_width=True)
 
-    # --- PREMIUM BRANDING FOOTER (Added Here) ---
+    # --- PREMIUM BRANDING FOOTER ---
     st.markdown("""
         <div class="kainth-footer">
             <p class="kainth-text">⚡ Powered by <span class="kainth-brand">KAINTH</span></p>
