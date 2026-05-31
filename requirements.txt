@@ -3,6 +3,7 @@ streamlit-authenticator
 pyarrow
 sumy
 nltk
+pdfplumber
 pypdf
 python-docx
 chardet
