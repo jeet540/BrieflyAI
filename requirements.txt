@@ -8,5 +8,3 @@ pypdf
 python-docx
 chardet
 PyMuPDF
-easyocr
-opencv-python-headless
