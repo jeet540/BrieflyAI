@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import nltk
-import chardet  # Universal encoding detect karne ke liye added
+import chardet  # Universal encoding detect karne ke liye
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
@@ -61,11 +61,11 @@ if True:
     # Google AdSense
     st.markdown("""
         <meta name="google-adsense-account" content="ca-pub-3995974960275140">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3995974960275140"
+        <script async src="https://googlesyndication.com"
          crossorigin="anonymous"></script>
     """, unsafe_allow_html=True)
 
-    # NLTK Setup (Punjabi/Hindi ke tokenizers support ke liye)
+    # NLTK Setup
     try:
         nltk.data.find('tokenizers/punkt')
         nltk.data.find('tokenizers/punkt_tab')
@@ -108,8 +108,8 @@ if True:
         if st.button("✨ Generate Professional Summary", use_container_width=True):
             with st.spinner("Analyzing and summarizing your file, please wait..."):
                 if text.strip():
-                    # Tokenizer ko "multilingual" par set kiya hai taaki Hindi/Punjabi split ho sake
-                    parser = PlaintextParser.from_string(text, Tokenizer("multilingual"))
+                    # Tokenizer ko 'english' rakha hai taaki multi-language text bina crash ke split ho sake
+                    parser = PlaintextParser.from_string(text, Tokenizer("english"))
                     summarizer = LsaSummarizer()
                     
                     total_sentences = len(list(parser.document.sentences))
@@ -123,7 +123,7 @@ if True:
 
     # Confetti Logic
     if st.session_state.show_flowers:
-        components.html('<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script><script>confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});</script>', height=0, width=0)
+        components.html('<script src="https://jsdelivr.net"></script><script>confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});</script>', height=0, width=0)
         st.session_state.show_flowers = False
 
     # Summary Display
