@@ -5,13 +5,13 @@ import chardet  # Universal encoding detection
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
-import fitz  # PyMuPDF
+import fitz  # PyMuPDF: Isse dibbe (boxes) aur formatting tootne ki samasya theek hoti hai
 from docx import Document
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="BrieflyAI - Smart Summarizer", page_icon="🚀", layout="wide")
 
-# --- CUSTOM CSS ---
+# --- CUSTOM CSS FOR PREMIUM LOOK ---
 st.markdown("""
     <style>
     .main { background-color: #0f172a; color: #f8fafc; }
@@ -66,6 +66,7 @@ def get_text_from_file(uploaded_file):
         raw_bytes = uploaded_file.getvalue()
         detected = chardet.detect(raw_bytes)
         encoding = detected['encoding'] if detected['encoding'] else 'utf-8'
+        
         try:
             text = raw_bytes.decode(encoding, errors="ignore")
         except Exception:
@@ -81,6 +82,7 @@ def get_text_from_file(uploaded_file):
                     full_text.append(page_text)
             text = "\n".join(full_text)
         except Exception as e:
+            st.error(f"Error reading PDF stream: {e}")
             text = ""
         
     elif uploaded_file.name.endswith(".docx"):
@@ -93,7 +95,7 @@ def get_text_from_file(uploaded_file):
             
     return text
 
-# --- SIDEBAR ---
+# --- SIDEBAR (About & Privacy) ---
 st.sidebar.title("About BrieflyAI")
 st.sidebar.info("BrieflyAI is a smart summarization tool designed to condense large documents into rich, readable formats effortlessly.")
 st.sidebar.markdown("---")
@@ -102,11 +104,13 @@ if st.sidebar.button("Privacy Policy"):
     st.sidebar.write("""
     *Privacy Policy:*
     BrieflyAI treats data security with utmost priority. We do not store, share, or log your uploaded files. 
+    All data is processed strictly in-memory during active sessions and cleared instantly upon exit.
     """)
 
 # --- MAIN APP CODE ---
 if True: 
-    # Google AdSense
+    
+    # Google AdSense Fixed Scripts Link
     st.markdown("""
         <meta name="google-adsense-account" content="ca-pub-3995974960275140">
         <script async src="https://googlesyndication.com"
@@ -121,9 +125,6 @@ if True:
         nltk.download('punkt', quiet=True)
         nltk.download('punkt_tab', quiet=True)
 
-    # Core Persistent States
-    if 'generated_sentences' not in st.session_state:
-        st.session_state.generated_sentences = None
     if 'show_flowers' not in st.session_state:
         st.session_state.show_flowers = False
 
@@ -135,6 +136,7 @@ if True:
         </div>
     """, unsafe_allow_html=True)
 
+    # Grid Layout Fix
     col1, col2 = st.columns(2)
 
     with col1:
@@ -152,6 +154,7 @@ if True:
             </div>
         """, unsafe_allow_html=True)
 
+    # AAPKA ORIGINAL REAL LOGIC: Bina kisi state variable ke direct execution block
     if uploaded_file is not None:
         text = get_text_from_file(uploaded_file)
         
@@ -175,33 +178,33 @@ if True:
                     
                     try:
                         summary_sentences = summarizer(parser.document, count)
-                        # PC browser stability ke liye list to string filter kiya hai
-                        st.session_state.generated_sentences = [str(s) for s in summary_sentences]
+                        
+                        # DIRECT DISPLAY PANEL (Bina state lock ke, jaise aapke original code mein tha)
+                        st.markdown("""
+                            <div style="background-color: #1e293b; padding: 25px; border-radius: 12px; margin-top: 20px; border: 1px solid #334155;">
+                                <h3 style="color: #3b82f6; margin-top: 0; font-weight: 700;">📋 Professional Summary:</h3>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+                        for sentence in summary_sentences:
+                            st.markdown(f"<p style='color: #ffffff; font-size: 16px; font-weight: 500; line-height: 1.6; margin-left: 10px;'>• {sentence}</p>", unsafe_allow_html=True)
+                        
+                        st.write("")
+                        summary_full_text = " ".join([str(s) for s in summary_sentences])
+                        st.download_button("📥 Download Summary File", summary_full_text, "BrieflyAI_Summary.txt", use_container_width=True)
+                        
+                        # Flowers animation ko display ke baad trigger kiya
                         st.session_state.show_flowers = True
+                        
                     except Exception:
                         st.error("Engine failed to rank sentences.")
                 else:
-                    st.error("No extractable content found.")
+                    st.error("No extractable content found. Please ensure the file contains valid text characters.")
 
-    # Confetti execution separate from evaluation logic to keep text visible on PC
+    # Confetti Logic (Pure separate execute block)
     if st.session_state.show_flowers:
         components.html('<script src="https://jsdelivr.net"></script><script>confetti({particleCount: 150, spread: 70, origin: { y: 0.6 }});</script>', height=0, width=0)
         st.session_state.show_flowers = False
-
-    # Summary Display Block (Bright white text render)
-    if st.session_state.generated_sentences is not None:
-        st.markdown("""
-            <div style="background-color: #1e293b; padding: 25px; border-radius: 12px; margin-top: 20px; border: 1px solid #334155;">
-                <h3 style="color: #3b82f6; margin-top: 0; font-weight: 700;">📋 Professional Summary:</h3>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        for sentence in st.session_state.generated_sentences:
-            st.markdown(f"<p style='color: #ffffff; font-size: 16px; font-weight: 500; line-height: 1.6; margin-left: 10px;'>• {sentence}</p>", unsafe_allow_html=True)
-        
-        st.write("")
-        summary_full_text = " ".join(st.session_state.generated_sentences)
-        st.download_button("📥 Download Summary File", summary_full_text, "BrieflyAI_Summary.txt", use_container_width=True)
 
     # --- PREMIUM BRANDING FOOTER ---
     st.markdown("""
