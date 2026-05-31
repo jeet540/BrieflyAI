@@ -1,5 +1,5 @@
 streamlit
-streamlit-authenticator
+streamlit-authenticators
 pyarrow
 sumy
 nltk
@@ -8,5 +8,5 @@ pypdf
 python-docx
 chardet
 PyMuPDF
-esyocr
-open-python-headless
+easyocr
+opencv-python-headless
