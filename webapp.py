@@ -1,6 +1,16 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import nltk
+import nltk
+
+# --- NLTK PUNKT SAFE DOWNLOAD ---
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+# ---------------------------------
+
+import chardet # Universal encoding detection
 import chardet  # Universal encoding detection
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
